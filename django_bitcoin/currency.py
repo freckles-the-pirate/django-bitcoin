@@ -140,13 +140,15 @@ class BitcoinChartsCurrency(Currency):
     def populate_cache(self):
         try:
             f = urllib2.urlopen(
-                u"http://bitcoincharts.com/t/weighted_prices.json")
+                    u"http://api.bitcoincharts.com/v1/weighted_prices.json")
             result=f.read()
             j=json.loads(result)
             base_price = j[self.identifier]
             cache.set(self.cache_key, base_price, 60*60)
             #print result
-        except:
+        except Exception as e:
+            if isinstance(urllib2.HTTPError, e):
+                raise TemporaryConversionError('%s'%e)
             print "Unexpected error:", sys.exc_info()[0]
 
         if not cache.get(self.cache_key):
